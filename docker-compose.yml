@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+    api:
+        build:
+            context: api
+            dockerfile: Dockerfile.local
+        command: python3 main.py
+        ports:
+            - '3005:3005'
+        develop:
+            watch:
+                - action: sync
+                  path: ./api/app
+                  target: /opt/api/app
+        networks:
+            - backend
+
+    frontend:
+        build:
+            context: frontend
+            dockerfile: Dockerfile.local
+        command: npm start
+        ports:
+            - '3000:3000'
+        develop:
+            watch:
+                - action: sync
+                  path: ./frontend/app
+                  target: /opt/app
+                  ignore:
+                      - node_modules/
+                - action: rebuild
+                  path: ./frontend/app/package.json
+        environment:
+            REACT_APP_BACKEND_URL: http://localhost:3003 # Change this if needed
+        networks:
+            - backend
+
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.local
+        command: npm start
+        ports:
+            - '3003:3003'
+        develop:
+            watch:
+                - action: sync
+                  path: ./backend/app
+                  target: /opt/app
+                  ignore:
+                      - node_modules/
+                - action: rebuild
+                  path: ./backend/app/package.json
+        environment:
+            PORT: 3003
+            API_URI: http://api:3005
+        networks:
+            - backend
+
+networks:
+    backend:
+        driver: bridge

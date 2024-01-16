@@ -1,0 +1,10 @@
+## Stage 1
+FROM  python:3.12
+
+COPY app/requirements.txt /opt/app/
+
+WORKDIR /opt/app
+
+RUN pip3 install -r requirements.txt
+
+COPY app/ /opt/app/
